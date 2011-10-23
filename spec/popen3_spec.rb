@@ -14,11 +14,14 @@ EOS
         :stdout => Proc.new { |data| stdout_capture << data },
         :stderr => Proc.new { |data| stderr_capture << data })
       handler.callback do
-        puts "OK"
+        5.times do |i|
+          stdout_capture.must_match(/^#{i+1}$/)
+          stderr_capture.must_match(/^#{i+1}$/)
+        end
         EM.stop
       end
       handler.errback do |err_code|
-        fail "WTF! #{err_code}"
+        assert(false, "Failed to run command: #{err_code}")
         EM.stop
       end
       handler.send_data("5\n")
