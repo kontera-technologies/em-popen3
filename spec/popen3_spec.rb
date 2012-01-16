@@ -27,4 +27,28 @@ EOS
       handler.send_data("5\n")
     end
   end
+
+  it "can be killed" do
+    cmd = <<EOS
+ruby -e "\\$stdout.sync = true; \\$stderr.sync=true; ['INT', 'TERM'].each {|s| trap(s) {\\$stdout.puts s; exit 0}}; 10.times {sleep 1}"
+EOS
+    stdout_capture = stderr_capture = ''
+    EM.run do
+      handler = EM.popen3(
+        cmd,
+        :stdout => Proc.new { |data| stdout_capture << data },
+        :stderr => Proc.new { |data| stderr_capture << data }
+      )
+      handler.callback do
+        stdout_capture.must_match(/TERM/)
+        EM.stop
+      end
+      handler.errback do |err_code|
+        assert(false, "Failed to run command: #{err_code}")
+        EM.stop
+      end
+      EM.add_timer(1) { handler.kill }
+      EM.add_timer(10) { assert(false, 'Failed to kill the damn thing'); EM.stop }
+    end
+  end
 end

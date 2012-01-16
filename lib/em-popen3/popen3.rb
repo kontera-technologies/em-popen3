@@ -33,7 +33,7 @@ module EventMachine
 
   private
   module POpen3
-    
+
     class Wrapper
       include EM::Deferrable
       attr_accessor :pipes, :stream_callbacks
@@ -49,6 +49,10 @@ module EventMachine
 
       def send_data(data)
         pipes[:stdin].send_data(data) if pipes.has_key?(:stdin)
+      end
+
+      def kill(signal='TERM')
+        Process.kill(signal, @wait_thr.pid)
       end
 
       def unbind(name)
