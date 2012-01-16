@@ -51,8 +51,9 @@ module EventMachine
         pipes[:stdin].send_data(data) if pipes.has_key?(:stdin)
       end
 
-      def kill(signal='TERM')
+      def kill(signal='TERM', wait=false)
         Process.kill(signal, @wait_thr.pid)
+        @wait_thr.value if wait
       end
 
       def unbind(name)

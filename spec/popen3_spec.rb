@@ -40,6 +40,7 @@ EOS
         :stderr => Proc.new { |data| stderr_capture << data }
       )
       handler.callback do
+        puts "stopped without error"
         stdout_capture.must_match(/TERM/)
         EM.stop
       end
@@ -47,7 +48,7 @@ EOS
         assert(false, "Failed to run command: #{err_code}")
         EM.stop
       end
-      EM.add_timer(1) { handler.kill }
+      EM.add_timer(1) { handler.kill('TERM', true) }
       EM.add_timer(10) { assert(false, 'Failed to kill the damn thing'); EM.stop }
     end
   end
