@@ -30,7 +30,7 @@ EOS
 
   it "can be killed" do
     cmd = <<EOS
-ruby -e "\\$stdout.sync = true; \\$stderr.sync=true; ['INT', 'TERM'].each {|s| trap(s) {\\$stdout.puts s; exit 0}}; 10.times {sleep 1}"
+/bin/bash -l -c "trap \"echo TERM;echo 0\" SIGINT SIGTERM;sleep 10"
 EOS
     stdout_capture = stderr_capture = ''
     EM.run do
