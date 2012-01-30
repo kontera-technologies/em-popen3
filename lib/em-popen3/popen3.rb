@@ -54,8 +54,8 @@ module EventMachine
       def kill(signal='TERM', wait=false)
         Process.kill(signal, @wait_thr.pid)
         @stdout.close
-	    @stderr.close
-	    @wait_thr.value if wait
+	@stderr.close
+	@wait_thr.value if wait
       end
 
       def unbind(name)
