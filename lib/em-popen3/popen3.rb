@@ -41,10 +41,10 @@ module EventMachine
       def initialize(cmd, stream_callbacks)
         @pipes = {}
         @stream_callbacks = stream_callbacks
-        stdin, @stdout, @stderr, @wait_thr = Open3.popen3(cmd)
-        EM.attach(stdin, Handler, self, :stdin)
-        EM.attach(@stdout, OutHandler, self, :stdout)
-        EM.attach(@stderr, OutHandler, self, :stderr)
+        @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(cmd)
+        @stdin_conn = EM.attach(@stdin, Handler, self, :stdin)
+        @stdout_conn = EM.attach(@stdout, OutHandler, self, :stdout)
+        @stderr_conn = EM.attach(@stderr, OutHandler, self, :stderr)
       end
 
       def send_data(data)
@@ -53,13 +53,16 @@ module EventMachine
 
       def kill(signal='TERM', wait=false)
         Process.kill(signal, @wait_thr.pid)
-        @stdout.close
-	@stderr.close
-	@wait_thr.value if wait
+	val = @wait_thr.value if wait
+	@stdin_conn.close_connection
+        @stdout_conn.close_connection
+        @stderr_conn.close_connection
+	return val
       end
 
       def unbind(name)
         pipes.delete(name)
+	remove_instance_variable("@"+name.to_s)
         if pipes.empty?
           err_code = @wait_thr.value
           err_code == 0 ? succeed : fail(err_code)
@@ -76,6 +79,11 @@ module EventMachine
       end
 
       def unbind
+	begin 
+	   @io.close unless @io.closed?
+	rescue Exception => e
+	   #don't care if the stream has been closed already
+	end
         @parent.unbind(@name)
       end
     end
