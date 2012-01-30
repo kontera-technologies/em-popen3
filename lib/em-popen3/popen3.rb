@@ -41,10 +41,10 @@ module EventMachine
       def initialize(cmd, stream_callbacks)
         @pipes = {}
         @stream_callbacks = stream_callbacks
-        stdin, stdout, stderr, @wait_thr = Open3.popen3(cmd)
+        stdin, @stdout, @stderr, @wait_thr = Open3.popen3(cmd)
         EM.attach(stdin, Handler, self, :stdin)
-        EM.attach(stdout, OutHandler, self, :stdout)
-        EM.attach(stderr, OutHandler, self, :stderr)
+        EM.attach(@stdout, OutHandler, self, :stdout)
+        EM.attach(@stderr, OutHandler, self, :stderr)
       end
 
       def send_data(data)
@@ -53,7 +53,9 @@ module EventMachine
 
       def kill(signal='TERM', wait=false)
         Process.kill(signal, @wait_thr.pid)
-        @wait_thr.value if wait
+        @stdout.close
+	    @stderr.close
+	    @wait_thr.value if wait
       end
 
       def unbind(name)
