@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'em-popen3'
 
   s.add_dependency      'eventmachine', '>= 1.0.0.beta.4'
+  s.add_dependency      'rake'
 
   s.files             = `git ls-files`.split("\n")
   s.require_paths     = ['lib']

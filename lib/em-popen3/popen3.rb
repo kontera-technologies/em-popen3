@@ -53,16 +53,16 @@ module EventMachine
 
       def kill(signal='TERM', wait=false)
         Process.kill(signal, @wait_thr.pid)
-	val = @wait_thr.value if wait
-	@stdin_conn.close_connection
+        val = @wait_thr.value if wait
+        @stdin_conn.close_connection
         @stdout_conn.close_connection
         @stderr_conn.close_connection
-	return val
+        return val
       end
 
       def unbind(name)
         pipes.delete(name)
-	remove_instance_variable("@"+name.to_s)
+        remove_instance_variable("@"+name.to_s)
         if pipes.empty?
           err_code = @wait_thr.value
           err_code == 0 ? succeed : fail(err_code)
@@ -79,11 +79,11 @@ module EventMachine
       end
 
       def unbind
-	begin 
-	   @io.close unless @io.closed?
-	rescue Exception => e
-	   #don't care if the stream has been closed already
-	end
+        begin 
+          @io.close unless @io.closed?
+        rescue Exception => e
+          #don't care if the stream has been closed already
+        end
         @parent.unbind(@name)
       end
     end
